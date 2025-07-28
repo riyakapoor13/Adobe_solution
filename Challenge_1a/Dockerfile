@@ -1,21 +1,17 @@
-# Use a slim, official Python base image compatible with the required architecture
+# Use a consistent Python base image
 FROM --platform=linux/amd64 python:3.11-slim
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy the requirements file into the container
+# --- FIX: Install system-level dependencies required by lightgbm ---
+RUN apt-get update && apt-get install -y libgomp1
+
+# Now, copy and install Python requirements
 COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-# Install the Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy the rest of your application code
+COPY . .
 
-# Copy all your agent code into the container
-COPY agents/ ./agents/
-
-# Copy your main script and the trained model
-COPY main.py .
-COPY model.txt .
-
-# Specify the command to run when the container starts
+# Set the command to run when the container starts
 CMD ["python", "main.py"]
