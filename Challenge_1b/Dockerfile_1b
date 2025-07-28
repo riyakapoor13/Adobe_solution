@@ -1,0 +1,19 @@
+# Use a consistent Python base image
+FROM --platform=linux/amd64 python:3.11-slim
+
+WORKDIR /app
+
+# Copy dependency list first to leverage Docker layer caching
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy all your code into the container
+# This includes the shared 1A parser and the new 1B agents
+COPY agents/ ./agents/
+COPY agents_1b/ ./agents_1b/
+COPY config.py .
+COPY main_1b.py .
+
+# The command to run when the container starts
+# Note: The first time this runs, it will download the embedding model.
+CMD ["python", "main_1b.py"]
